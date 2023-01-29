@@ -1,0 +1,67 @@
+blueprint:
+  name: Copy light status
+  description: Copies status from one light to another when source light changes state
+  domain: automation
+  source_url: https://github.com/bbcelly/HA_blueprints.git
+  input:
+    light_source:
+      name: Light source
+      selector:
+        entity:
+          domain: light
+    light_target:
+      name: Light target
+      selector:
+        target:
+          entity:
+            domain: light
+
+mode: single
+
+trigger:
+  platform: state
+  entity_id: !input light_source
+condition: []
+
+action:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'off' }}"
+        sequence:
+          - service: light.turn_off
+            target: !input light_target
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'on' }}"
+          - condition: template
+            value_template: "{{ trigger.to_state.attributes.get('color_temp') != None }}"
+        sequence:
+          - service: light.turn_on
+            target: !input light_target
+            data_template:
+              color_temp: >-
+                {{ trigger.to_state.attributes.get('color_temp')
+                }}
+              brightness: >-
+                {{ trigger.to_state.attributes.get('brightness')
+                }}
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'on' }}"
+          - condition: template
+            value_template: "{{ trigger.to_state.attributes.get('rgb_color') != None }}"
+        sequence:
+          - service: light.turn_on
+            target: !input light_target
+            data_template:
+              rgb_color:
+                - >-
+                  {{ trigger.to_state.attributes.rgb_color[0] }}
+                - >-
+                  {{ trigger.to_state.attributes.rgb_color[1] }}
+                - >-
+                  {{ trigger.to_state.attributes.rgb_color[2] }}
+              brightness: >-
+                {{ trigger.to_state.attributes.get('brightness')
+                }}
