@@ -2,7 +2,7 @@ blueprint:
   name: Copy light status
   description: Copies status from one light to another when source light changes state
   domain: automation
-  source_url: https://github.com/bbcelly/HA_blueprints.git
+  source_url: https://raw.githubusercontent.com/bbcelly/HA_blueprints/main/copy_light_status.yaml
   input:
     light_source:
       name: Light source
