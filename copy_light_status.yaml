@@ -31,11 +31,34 @@ action:
         sequence:
           - service: light.turn_off
             target: !input light_target
+      ## ON/OFF
       - conditions:
           - condition: template
             value_template: "{{ trigger.to_state.state == 'on' }}"
           - condition: template
-            value_template: "{{ trigger.to_state.attributes.get('color_temp') != None }}"
+            value_template: "{{ trigger.to_state.attributes.get('supported_color_modes') != None and trigger.to_state.attributes.supported_color_modes[0] == 'onoff' }}"
+        sequence:
+          - service: light.turn_on
+            target: !input light_target
+      ## Brightness
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'on' }}"
+          - condition: template
+            value_template: "{{ trigger.to_state.attributes.get('color_mode') == 'brightness' }}"
+        sequence:
+          - service: light.turn_on
+            target: !input light_target
+            data_template:
+              brightness: >-
+                {{ trigger.to_state.attributes.get('brightness')
+                }}
+      ## Color temp
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'on' }}"
+          - condition: template
+            value_template: "{{ trigger.to_state.attributes.get('color_mode') == 'color_temp' }}"
         sequence:
           - service: light.turn_on
             target: !input light_target
@@ -46,11 +69,12 @@ action:
               brightness: >-
                 {{ trigger.to_state.attributes.get('brightness')
                 }}
+      ## RGB color
       - conditions:
           - condition: template
             value_template: "{{ trigger.to_state.state == 'on' }}"
           - condition: template
-            value_template: "{{ trigger.to_state.attributes.get('rgb_color') != None }}"
+            value_template: "{{ trigger.to_state.attributes.get('color_mode') == 'hs' }}"
         sequence:
           - service: light.turn_on
             target: !input light_target
