@@ -1,0 +1,29 @@
+blueprint:
+  name: Copy motion status
+  description: Copies status from one motion sensor to boolean
+  domain: automation
+  source_url: https://raw.githubusercontent.com/bbcelly/HA_blueprints/main/copy_motion_status.yaml
+  input:
+    motion_source:
+      name: motion source
+      selector:
+        entity:
+          domain: motion
+    motion_target:
+      name: Motion target
+      selector:
+        target:
+          entity:
+            domain: switch
+
+mode: single
+
+trigger:
+  platform: state
+  entity_id: !input motion_source
+condition: []
+
+action:
+  - service: switch.turn_{{ trigger.to_state.state }}
+    data: {}
+    target: !input motion_target
