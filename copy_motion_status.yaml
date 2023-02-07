@@ -8,7 +8,7 @@ blueprint:
       name: motion source
       selector:
         entity:
-          domain: motion
+          domain: binary_sensor
     motion_target:
       name: Motion target
       selector:
@@ -19,8 +19,12 @@ blueprint:
 mode: single
 
 trigger:
-  platform: state
-  entity_id: !input motion_source
+  - platform: state
+    entity_id: !input motion_source
+    to: "on"
+  - platform: state
+    entity_id: !input motion_source
+    to: "off"
 condition: []
 
 action:
