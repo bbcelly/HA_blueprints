@@ -1,0 +1,31 @@
+#http://miniserver/data/LoxAPP3.json
+blueprint:
+  name: Copy brightness status
+  description: Copies status from one brightness sensor to brightness
+  domain: automation
+  source_url: https://raw.githubusercontent.com/bbcelly/HA_blueprints/main/copy_brightness_status.yaml
+  input:
+    brightness_source:
+      name: brightness source
+      selector:
+        entity:
+          domain: sensor
+          device_class: illuminance
+          multiple: false
+    brightness_target:
+      name: String target
+      description: "UUID of brightness in loxone"
+      default: ""
+
+mode: single
+
+trigger:
+  - platform: state
+    entity_id: !input brightness_source
+condition: []
+
+action:
+  - service: loxone.event_websocket_command
+    data_template:
+      uuid: !input brightness_target
+      value: "{{trigger.to_state.state|float+0}}"
