@@ -1,0 +1,33 @@
+blueprint:
+  name: Copy door status
+  description: Copies status from one door sensor to switch
+  domain: automation
+  source_url: https://raw.githubusercontent.com/bbcelly/HA_blueprints/main/copy_door_status.yaml
+  input:
+    door_source:
+      name: Door source
+      selector:
+        entity:
+          domain: binary_sensor
+    door_target:
+      name: Door target
+      selector:
+        target:
+          entity:
+            domain: switch
+
+mode: single
+
+trigger:
+  - platform: state
+    entity_id: !input door_source
+    to: "on"
+  - platform: state
+    entity_id: !input door_source
+    to: "off"
+condition: []
+
+action:
+  - service: switch.turn_{{ trigger.to_state.state }}
+    data: {}
+    target: !input door_target
