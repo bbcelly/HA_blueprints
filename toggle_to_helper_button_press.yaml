@@ -1,0 +1,33 @@
+blueprint:
+  name: Toggle to helper button press
+  description: Every change will cause helper button press
+  domain: automation
+  source_url: https://raw.githubusercontent.com/bbcelly/HA_blueprints/main/toggle_to_helper_button_press.yaml
+  input:
+    toggle_source:
+      name: Toggle source
+      selector:
+        entity:
+          domain:
+            - binary_sensor
+            - input_boolean
+            - switch
+    button_target:
+      name: Button target
+      selector:
+        target:
+          entity:
+            domain: input_button
+
+mode: single
+
+trigger:
+  - platform: state
+    entity_id: !input toggle_source
+condition: []
+
+action:
+  - service: input_button.press
+    metadata: {}
+    data: {}
+    target: !input button_target
