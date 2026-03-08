@@ -1,0 +1,80 @@
+blueprint:
+  name: Vibration Sensor Smoother
+  description: >
+    Smooths a rapidly toggling vibration sensor (e.g. on a washing machine) into
+    a stable on/off state. The smoothed state turns ON immediately when vibration
+    is detected, but only turns OFF after the sensor has been continuously OFF for
+    a configurable number of seconds.
+
+    Before using this blueprint:
+      1. Create an Input Boolean helper in HA (Settings → Devices & Services → Helpers → Add Helper → Toggle)
+      2. Give it a name like "Washing Machine Running"
+      3. Select that helper below as the "Smoothed State Helper"
+  domain: automation
+  input:
+    vibration_sensor:
+      name: Vibration Sensor
+      description: The binary sensor that toggles rapidly when the machine is running.
+      selector:
+        entity:
+          domain: binary_sensor
+
+    smoothed_helper:
+      name: Smoothed State Helper
+      description: >
+        An input_boolean helper that will hold the smoothed on/off state.
+        Create one first in Settings → Helpers if you haven't already.
+      selector:
+        entity:
+          domain: input_boolean
+
+    delay_off_seconds:
+      name: Delay Off (seconds)
+      description: >
+        How many seconds the vibration sensor must remain continuously OFF
+        before the smoothed state turns OFF. Increase this if your sensor
+        has longer gaps between vibration pulses during normal operation.
+      default: 60
+      selector:
+        number:
+          min: 5
+          max: 600
+          step: 5
+          unit_of_measurement: seconds
+          mode: slider
+
+# Restart mode ensures that if vibration returns during the OFF delay,
+# the delay is cancelled and the helper stays ON.
+mode: restart
+max_exceeded: silent
+
+trigger:
+  - platform: state
+    entity_id: !input vibration_sensor
+
+action:
+  - choose:
+      # Vibration detected → turn ON immediately
+      - conditions:
+          - condition: state
+            entity_id: !input vibration_sensor
+            state: "on"
+        sequence:
+          - service: input_boolean.turn_on
+            target:
+              entity_id: !input smoothed_helper
+
+      # Vibration stopped → wait, then turn OFF only if still off
+      - conditions:
+          - condition: state
+            entity_id: !input vibration_sensor
+            state: "off"
+        sequence:
+          - delay:
+              seconds: !input delay_off_seconds
+          - condition: state
+            entity_id: !input vibration_sensor
+            state: "off"
+          - service: input_boolean.turn_off
+            target:
+              entity_id: !input smoothed_helper
