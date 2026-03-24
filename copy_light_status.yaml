@@ -63,8 +63,8 @@ action:
           - service: light.turn_on
             target: !input light_target
             data_template:
-              color_temp: >-
-                {{ trigger.to_state.attributes.get('color_temp')
+              color_temp_kelvin: >-
+                {{ trigger.to_state.attributes.get('color_temp_kelvin')
                 }}
               brightness: >-
                 {{ trigger.to_state.attributes.get('brightness')
